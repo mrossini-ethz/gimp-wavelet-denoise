@@ -1,6 +1,6 @@
 PLUGIN = wavelet-denoise
 LOCALEDIR = /usr/share/locale
-LANGUAGES = de ru it et pl
+LANGUAGES = de ru it et pl es sr sr@latin
 
 # END CONFIG ##################################################################
 

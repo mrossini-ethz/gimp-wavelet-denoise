@@ -1,0 +1,205 @@
+# Serbian translations for wavelet-denoise package.
+#
+# Copyright (C) 2009 THE wavelet-denoise'S COPYRIGHT HOLDER
+#
+# This file is distributed under the same license as the wavelet-denoise package.
+#
+# Miloš Popović <gpopac@gmail.com>, 2009.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: wavelet-denoise 0.3.1\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2009-09-13 11:22+0000\n"
+"PO-Revision-Date: 2009-09-13 11:22+0000\n"
+"Last-Translator: Miloš Popović <gpopac@gmail.com>\n"
+"Language-Team: Serbian <gnom@prevod.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%"
+"10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+
+#: ../src/messages.h:21
+msgid "Wavelet denoise"
+msgstr "Talasno uklanjanje šuma"
+
+#: ../src/messages.h:23
+msgid ""
+"This plugin allows the separate denoising of image channels in multiple "
+"color spaces using wavelets."
+msgstr ""
+"Ovaj dodatak vam omogućava da zasebno uklonite šum na kanalima slike u "
+"nekoliko različitih prostora boje pomoću talasnog algoritma."
+
+#: ../src/messages.h:26
+msgid ""
+"Adjusts the threshold for denoising of the selected channel in a range from "
+"0.0 (none) to 10.0. The threshold is the value below which everything is "
+"considered noise."
+msgstr ""
+"Podesite prag uklanjanja šuma za izabrani kanal u vrednosti od 0 do 10. Prag "
+"je ona vrednost ispod koje se sve smatra šumom."
+
+#: ../src/messages.h:27
+msgid ""
+"Adjusts the threshold for denoising in a range from 0.0 (none) to 10.0. The "
+"threshold is the value below which everything is considered noise."
+msgstr ""
+"Podesite prag uklanjanja šuma u vrednosti od 0 (bez uklanjanja) do 10. Prag "
+"je ona vrednost ispod koje se sve smatra šumom."
+
+#: ../src/messages.h:28
+msgid "Select an image channel to edit its denoising settings."
+msgstr "Izaberite kanala slike iz koga želite da uklonite šum."
+
+#: ../src/messages.h:29
+msgid "Display all channels of the image (final image)."
+msgstr "Prikazuje sve kanale slike (krajnja slika)."
+
+#: ../src/messages.h:30
+msgid "Display only the selected channel in grayscale mode."
+msgstr "Prikazuje samo izabrani kanal u sivim tonovoma."
+
+#: ../src/messages.h:31
+msgid "Display only the selected channel in color mode."
+msgstr "Prikzuje samo izabrani kanal u boji."
+
+#: ../src/messages.h:32
+msgid ""
+"The YCbCr color model has one luminance channel (Y) which contains most of "
+"the detail information of an image (such as brightness and contrast) and two "
+"chroma channels (Cb = blueness, Cr = reddness) that hold the color "
+"information. Note that this choice drastically affects the result."
+msgstr ""
+"YCbCr model boja ima jedan kanal za luminansu (Y), koji sadrži većinu podataka "
+"o detaljima na slici (kao što je osvetljrenost i kontrast) i dva kanala za boje "
+"(Cb = plavi i Cr = crveni) koji sadrže podatke i bojama. Pravilan izbor kanala "
+"značajno utiče na krajnji ishod uklanjanja šuma."
+
+#: ../src/messages.h:33
+msgid ""
+"The RGB color model separates an image into channels of red, green, and "
+"blue. This is the default color model in GIMP. Note that this choice "
+"drastically affects the result."
+msgstr ""
+"RGB model boja razdvaja sliku na crveni, zeleni i plavi kanal. Ovo je "
+"podrazumevani model boja u Gimpu. Pravilan izbor kanala značajno utiče "
+"na krajnji ishod uklanjanja šuma."
+
+#: ../src/messages.h:34
+msgid ""
+"CIELAB (L*a*b*) is a color model in which chrominance is separated from "
+"lightness and color distances are perceptually uniform. Note that this "
+"choice drastically affects the result."
+msgstr ""
+"U CIELAB (L*a*b*) modelu boja hrominansa je razdvojena od osvetljenosti "
+"i razdaljina između boja je vidno jednaka. Pravilan izbor kanala značajno "
+"utiče na krajnji ishod uklanjanja šuma."
+
+#: ../src/messages.h:35
+msgid ""
+"This adjusts the softness of the thresholding (soft as opposed to hard "
+"thresholding). The higher the softness the more noise remains in the image. "
+"Default is 0.0."
+msgstr ""
+"Ovo podešava mekoću praga (meki nasuprot tvrdom pragu). Veća vrednost "
+"mekoće znači da će više šuma ostati na slici. Podrazumevana vrednost je 0."
+
+#: ../src/messages.h:37
+msgid ""
+"Resets the settings for the selected channel while the button is pressed."
+msgstr ""
+"Vraća sva podešavanja izabranog kanala dok je ovo dugme pritisnuto."
+
+#: ../src/messages.h:38
+msgid "Resets to the default values."
+msgstr "Vraća sve vrednosti na podrazumevane."
+
+#: ../src/messages.h:39
+msgid "Resets the current channel to the default values."
+msgstr "Vraća vrednost trenutnog kanala na podrazumevanu."
+
+#: ../src/messages.h:40
+msgid "Resets all channels to the default values."
+msgstr "Vraća vrednosti svih kanala na podrazumevane."
+
+#: ../src/denoise.c:66
+msgid "Wavelet denoising..."
+msgstr "Talasno ukloni šum..."
+
+#: ../src/interface.c:56
+msgid "Color model"
+msgstr "Model boja"
+
+#: ../src/interface.c:117
+msgid "Preview channel"
+msgstr "Pregled kanala"
+
+#: ../src/interface.c:125
+msgid "All"
+msgstr "Prikaži sve	"
+
+#: ../src/interface.c:144
+msgid "Selected (gray)"
+msgstr "Samo izabrani (sivo)"
+
+#: ../src/interface.c:145
+msgid "Selected"
+msgstr "Izabrani"
+
+#: ../src/interface.c:165
+msgid "Selected (color)"
+msgstr "Samo izabrani (u boji)"
+
+#: ../src/interface.c:189
+msgid "Channel select"
+msgstr "Izbor kanala"
+
+#: ../src/interface.c:221
+msgid "Channel settings"
+msgstr "Podešavanja kanala"
+
+#: ../src/interface.c:223
+msgid "Settings"
+msgstr "Podešavanja"
+
+#: ../src/interface.c:231
+msgid "Threshold"
+msgstr "Prag"
+
+#: ../src/interface.c:272
+msgid "Softness"
+msgstr "Mekoća"
+
+#: ../src/interface.c:334
+msgid "Reset channel"
+msgstr "Vrati kanal"
+
+#: ../src/interface.c:334
+msgid "Reset"
+msgstr "Vrati"
+
+#: ../src/interface.c:350
+msgid "Reset all"
+msgstr "Vrati sve"
+
+#: ../src/plugin.c:33 ../src/plugin.c:34 ../src/plugin.c:35 ../src/plugin.c:36
+msgid "Alpha"
+msgstr "Alfa"
+
+#: ../src/plugin.c:51
+msgid "Removes noise in the image using wavelets."
+msgstr "Uklanja šum sa slike ponoći talasnog algoritma."
+
+#: ../src/plugin.c:53
+msgid "Marco Rossini"
+msgstr "Marco Rossini"
+
+#: ../src/plugin.c:54
+msgid "Copyright 2008 Marco Rossini"
+msgstr "Sva prava su zadržana 2008 Marco Rossini"
+
+#: ../src/plugin.c:58
+msgid "_Wavelet denoise ..."
+msgstr "Talasno ukloni _šum..."
