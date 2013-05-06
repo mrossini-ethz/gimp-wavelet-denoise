@@ -20,11 +20,11 @@ GimpPlugInInfo PLUG_IN_INFO = { NULL, NULL, query, run };
 wavelet_settings settings = {
   {0, 0},			/* gray_thresholds */
   {0.0, 0.0},			/* gray_low */
-  {0, 0, 0, 0},			/* colour_thresholds */
+  {0, 0.4, 0.4, 0},			/* colour_thresholds */
   {0.0, 0.0, 0.0, 0.0},		/* colour_low */
   MODE_YCBCR,			/* colour_mode */
   0,				/* preview_channel */
-  1,				/* preview_mode */
+  0,				/* preview_mode */
   TRUE,				/* preview */
   {1.1, 4.5, 1.4},		/* times */
   0, 0				/* winxsize, winysize */

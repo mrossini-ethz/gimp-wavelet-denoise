@@ -61,7 +61,7 @@ reset_channel (GtkWidget * w, gpointer data)
 {
   if (channels > 2)
     {
-      settings.colour_thresholds[settings.preview_channel] = 0.0;
+      settings.colour_thresholds[settings.preview_channel] = 0.4;
       settings.colour_low[settings.preview_channel] = 0.0;
     }
   else
@@ -79,14 +79,14 @@ reset_all (GtkWidget * w, gpointer data)
   if (channels > 2)
     {
       settings.colour_thresholds[0] = 0.0;
-      settings.colour_thresholds[1] = 0.0;
-      settings.colour_thresholds[2] = 0.0;
+      settings.colour_thresholds[1] = 0.4;
+      settings.colour_thresholds[2] = 0.4;
       settings.colour_low[0] = 0.0;
       settings.colour_low[1] = 0.0;
       settings.colour_low[2] = 0.0;
       if (channels == 4)
 	{
-	  settings.colour_thresholds[3] = 0.0;
+	  settings.colour_thresholds[3] = 0.4;
 	  settings.colour_low[3] = 0.0;
 	}
     }
