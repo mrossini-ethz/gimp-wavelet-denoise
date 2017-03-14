@@ -1,4 +1,4 @@
-CFLAGS = -O3 -Wall $(shell gimptool-2.0 --cflags)
+CFLAGS = -O3 -lm -ldl -Wall $(shell gimptool-2.0 --cflags)
 LIBS = $(shell gimptool-2.0 --libs)
 PLUGIN = wavelet-denoise
 SOURCES = plugin.c colorspace.c denoise.c wavelet.c events.c interface.c
