@@ -1,10 +1,12 @@
 ChangeLog
 =========
 
-trunk
+unreleased
 -------------------------------------------------------------------------------
 - Added translations:
   - Serbian (thanks to Milos Popovic)
+- Fixed russian translation
+- Changed plugin defaults
 
 wavelet-denoise v0.3.1 - translations
 -------------------------------------------------------------------------------
