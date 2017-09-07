@@ -142,13 +142,13 @@ set_preview_mode (GtkWidget * w, gpointer data)
 {
   if (!gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (w)))
     return;
-  settings.preview_mode = (gint) data;
+  settings.preview_mode = (glong) data;
 }
 
 void
 set_preview_channel (GtkWidget * w, gpointer data)
 {
-  gint c = (gint) data;
+  gint c = (glong) data;
   if (!gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (w)))
     return;
   settings.preview_channel = c;

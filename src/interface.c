@@ -24,7 +24,7 @@ user_interface (GimpDrawable * drawable)
   /* can ui code be beautiful? */
   GtkRequisition req;
   gboolean run;
-  gint i;
+  glong i;
 
   if (channels < 3)
     {
