@@ -1,0 +1,4 @@
+po/*.mo
+po/wavelet-denoise.pot
+src/*.o
+src/wavelet-denoise
