@@ -2,6 +2,12 @@ INSTALL
 =======
 
 For Linux and Unix users
+
+Some dependencies may need to be installed
+
+sudo apt-get install libgegl-*
+sudo apt-get install libgimp*
+
 ------------------------
 For a system wide installation simply state
 
