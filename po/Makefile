@@ -24,7 +24,8 @@ fi
 
 install: $(LANGUAGES)
 	for L in $(LANGUAGES); \
-	do install -v -m 0644 $$L.mo "$(LOCALEDIR)/$$L/LC_MESSAGES/gimp20-$(PLUGIN)-plug-in.mo"; \
+	do mkdir -p "$(LOCALEDIR)/$$L/LC_MESSAGES"; \
+	install -v -m 0644 $$L.mo "$(LOCALEDIR)/$$L/LC_MESSAGES/gimp20-$(PLUGIN)-plug-in.mo"; \
 done
 
 uninstall: $(LANGUAGES)
