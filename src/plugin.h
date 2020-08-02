@@ -93,10 +93,10 @@ extern char *names_rgb[];
 extern char *names_gray[];
 extern char *names_lab[];
 
-float *fimg[4];
-float *buffer[3];
-gint channels;
+extern float *fimg[4];
+extern float *buffer[3];
+extern gint channels;
 
-GTimer *timer;
+extern GTimer *timer;
 
 #endif /* __PLUGIN_H__ */

@@ -14,29 +14,29 @@
  */
 
 /* colour mode frame */
-GtkWidget *fr_mode, *mode_radio[3], *mode_vbox;
-GSList *mode_list;
+extern GtkWidget *fr_mode, *mode_radio[3], *mode_vbox;
+extern GSList *mode_list;
 
 /* preview select frame */
-GtkWidget *fr_preview, *preview_radio[3], *preview_vbox, *preview_check;
-GSList *preview_list;
+extern GtkWidget *fr_preview, *preview_radio[3], *preview_vbox, *preview_check;
+extern GSList *preview_list;
 
 /* channel select frame */
-GtkWidget *fr_channel, *channel_radio[4], *channel_vbox;
-GSList *channel_list;
+extern GtkWidget *fr_channel, *channel_radio[4], *channel_vbox;
+extern GSList *channel_list;
 
 /* threshold frame */
-GtkWidget *fr_threshold, *thr_label[2], *thr_spin[2];
-GtkWidget *thr_hbox[2], *thr_vbox, *thr_scale[2];
-GtkObject *thr_adj[2];
+extern GtkWidget *fr_threshold, *thr_label[2], *thr_spin[2];
+extern GtkWidget *thr_hbox[2], *thr_vbox, *thr_scale[2];
+extern GtkObject *thr_adj[2];
 
 /* reset buttons */
-GtkWidget *reset_button[2], *reset_hbox, *reset_align, *reset_button_icon[2];
+extern GtkWidget *reset_button[2], *reset_hbox, *reset_align, *reset_button_icon[2];
 
 /* dialog */
-GtkWidget *dialog, *dialog_hbox, *dialog_vbox, *frame_hbox, *dialog_aspect;
-GtkWidget *preview, *preview_reset, *preview_hbox, *preview_reset_icon;
+extern GtkWidget *dialog, *dialog_hbox, *dialog_vbox, *frame_hbox, *dialog_aspect;
+extern GtkWidget *preview, *preview_reset, *preview_hbox, *preview_reset_icon;
 
 extern GtkWidget **radios_labels[];
 
-char **names;
+extern char **names;

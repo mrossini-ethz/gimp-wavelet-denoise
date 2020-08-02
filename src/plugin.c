@@ -16,6 +16,12 @@
 #include "plugin.h"
 
 GimpPlugInInfo PLUG_IN_INFO = { NULL, NULL, query, run };
+/* Global variables declared in plugin.h */
+float *fimg[4];
+float *buffer[3];
+gint channels;
+
+GTimer *timer;
 
 wavelet_settings settings = {
   {0, 0},			/* gray_thresholds */
