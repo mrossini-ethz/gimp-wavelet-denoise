@@ -1,0 +1,195 @@
+# Portuguese translations for wavelet-denoise package.
+# Copyright (C) 2008, Marco Rossini <marco.rossini@gmx.net>
+# This file is distributed under the same license as the wavelet-denoise package.
+# Joe Da Silva <digital@joescat.com>, 2022.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: wavelet-denoise 0.3\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-11-02 20:53-0700\n"
+"PO-Revision-Date: 2022-11-02 20:53-0700\n"
+"Last-Translator: Joe Da Silva <digital@joescat.com>\n"
+"Language-Team: Portuguese\n"
+"Language: pt\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: ../src/messages.h:21
+msgid "Wavelet denoise"
+msgstr "Wavelet denoise"
+
+#: ../src/messages.h:23
+msgid ""
+"This plugin allows the separate denoising of image channels in multiple "
+"color spaces using wavelets."
+msgstr "Este plugin permite a denoising separada de canais de imagem em múltiplos "
+"espaços de cores usando wavelets."
+
+#: ../src/messages.h:26
+msgid ""
+"Adjusts the threshold for denoising of the selected channel in a range from "
+"0.0 (none) to 10.0. The threshold is the value below which everything is "
+"considered noise."
+msgstr "Ajusta o limite para denoising em uma faixa de 0,0 (nenhum) a 10,0. "
+"O limite é o valor abaixo do qual tudo é considerado ruído."
+
+#: ../src/messages.h:27
+msgid ""
+"Adjusts the threshold for denoising in a range from 0.0 (none) to 10.0. The "
+"threshold is the value below which everything is considered noise."
+msgstr ""
+
+#: ../src/messages.h:28
+msgid "Select an image channel to edit its denoising settings."
+msgstr "Selecione um canal de imagem para editar suas configurações de denoising."
+
+#: ../src/messages.h:29
+msgid "Display all channels of the image (final image)."
+msgstr "Exibe todos os canais da imagem (imagem final)."
+
+#: ../src/messages.h:30
+msgid "Display only the selected channel in grayscale mode."
+msgstr "Exibe apenas o canal selecionado no modo escala de cinza."
+
+#: ../src/messages.h:31
+msgid "Display only the selected channel in color mode."
+msgstr "Exibe apenas o canal selecionado no modo de cor."
+
+#: ../src/messages.h:32
+msgid ""
+"The YCbCr color model has one luminance channel (Y) which contains most of "
+"the detail information of an image (such as brightness and contrast) and two "
+"chroma channels (Cb = blueness, Cr = reddness) that hold the color "
+"information. Note that this choice drastically affects the result."
+msgstr "O modelo de cor YCbCr tem um canal de luminância (Y) que contém a maior parte de "
+"as informações detalhadas de uma imagem (como brilho e contraste) e duas "
+"canais de croma (Cb = azul, Cr = vermelhidão) que mantêm a cor "
+"informações. Observe que essa escolha afeta drasticamente o resultado."
+
+#: ../src/messages.h:33
+msgid ""
+"The RGB color model separates an image into channels of red, green, and "
+"blue. This is the default color model in GIMP. Note that this choice "
+"drastically affects the result."
+msgstr "O modelo de cores RGB separa uma imagem em canais de vermelho, verde e "
+"azul. Este é o modelo de cores padrão no GIMP. Observe que esta opção "
+"afeta drasticamente o resultado."
+
+#: ../src/messages.h:34
+msgid ""
+"CIELAB (L*a*b*) is a color model in which chrominance is separated from "
+"lightness and color distances are perceptually uniform. Note that this "
+"choice drastically affects the result."
+msgstr "CIELAB (L*a*b*) é um modelo de cor em que a crominância é separada de "
+"luminosidade e as distâncias de cor são perceptivelmente uniformes. Observe que essa "
+"escolha afeta drasticamente o resultado."
+
+#: ../src/messages.h:35
+msgid ""
+"This adjusts the softness of the thresholding (soft as opposed to hard "
+"thresholding). The higher the softness the more noise remains in the image. "
+"Default is 0.0."
+msgstr "Isso ajusta a suavidade do limiar (suave em oposição a hard "
+"limiar). Quanto maior a suavidade, mais ruído permanece na imagem."
+"O padrão é 0,0."
+
+#: ../src/messages.h:37
+msgid ""
+"Resets the settings for the selected channel while the button is pressed."
+msgstr "Redefine as configurações do canal selecionado enquanto o botão é pressionado."
+
+#: ../src/messages.h:38
+msgid "Resets to the default values."
+msgstr "Redefine para os valores padrão."
+
+#: ../src/messages.h:39
+msgid "Resets the current channel to the default values."
+msgstr "Redefine o canal atual para os valores padrão."
+
+#: ../src/messages.h:40
+msgid "Resets all channels to the default values."
+msgstr "Redefine todos os canais para os valores padrão."
+
+#: ../src/denoise.c:66
+msgid "Wavelet denoising..."
+msgstr "Wavelet denoising..."
+
+#: ../src/interface.c:84
+msgid "Color model"
+msgstr "Modelo de cor"
+
+#: ../src/interface.c:145
+msgid "Preview channel"
+msgstr "Canal de visualização"
+
+#: ../src/interface.c:153
+msgid "All"
+msgstr "Tudo"
+
+#: ../src/interface.c:172
+msgid "Selected (gray)"
+msgstr "Selecionado (cinza)"
+
+#: ../src/interface.c:173
+msgid "Selected"
+msgstr "Selecionado"
+
+#: ../src/interface.c:193
+msgid "Selected (color)"
+msgstr "Selecionado (cor)"
+
+#: ../src/interface.c:217
+msgid "Channel select"
+msgstr "Seleção de canal"
+
+#: ../src/interface.c:249
+msgid "Channel settings"
+msgstr "Configurações do canal"
+
+#: ../src/interface.c:251
+msgid "Settings"
+msgstr "Definições"
+
+#: ../src/interface.c:259
+msgid "Threshold"
+msgstr "Limite"
+
+#: ../src/interface.c:300
+msgid "Softness"
+msgstr "Suavidade"
+
+#: ../src/interface.c:362
+msgid "Reset channel"
+msgstr "Redefinir canal"
+
+#: ../src/interface.c:362
+msgid "Reset"
+msgstr "Redefinir"
+
+#: ../src/interface.c:378
+msgid "Reset all"
+msgstr "Redefinir tudo"
+
+#: ../src/plugin.c:39 ../src/plugin.c:40 ../src/plugin.c:41 ../src/plugin.c:42
+msgid "Alpha"
+msgstr "Alfa"
+
+#: ../src/plugin.c:57
+msgid "Removes noise in the image using wavelets."
+msgstr "Remove o ruído na imagem usando wavelets."
+
+#: ../src/plugin.c:59
+msgid "Marco Rossini"
+msgstr "Marco Rossini"
+
+#: ../src/plugin.c:60
+msgid "Copyright 2008 Marco Rossini"
+msgstr "Copyright 2008 Marco Rossini"
+
+#: ../src/plugin.c:64
+msgid "_Wavelet denoise ..."
+msgstr "_Wavelet denoise ..."

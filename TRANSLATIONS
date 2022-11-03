@@ -4,7 +4,7 @@ TRANSLATIONS
 If you want to contribute by translating the program to any language, go to
 the 'po' directory and open the file 'Makefile'. Add your language to
 
-	LANGUAGES = de ru it et pl <your language>
+	LANGUAGES = de ru it et pl sr pt <your language>
 
 with a valid locale name. Then state
 
