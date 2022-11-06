@@ -1,12 +1,15 @@
 ChangeLog
 =========
 
-unreleased
+wavelet-denoise v0.4
 -------------------------------------------------------------------------------
 - Added translations:
   - Serbian (thanks to Milos Popovic)
+  - Portugese (thanks to Joe Da Silva)
 - Fixed russian translation
 - Changed plugin defaults
+- Bugfixes (thanks to Christiaan Welvaart, Antonio Rojas, Arnold Metselaar,
+  JoesCat)
 
 wavelet-denoise v0.3.1 - translations
 -------------------------------------------------------------------------------
