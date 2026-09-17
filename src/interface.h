@@ -13,6 +13,13 @@
  * 
  */
 
+#ifndef __INTERFACE_H__
+#define __INTERFACE_H__
+
+#include <gtk/gtk.h>
+#include <libgimp/gimp.h>
+#include <libgimp/gimpui.h>
+
 /* colour mode frame */
 extern GtkWidget *fr_mode, *mode_radio[3], *mode_vbox;
 extern GSList *mode_list;
@@ -28,7 +35,7 @@ extern GSList *channel_list;
 /* threshold frame */
 extern GtkWidget *fr_threshold, *thr_label[2], *thr_spin[2];
 extern GtkWidget *thr_hbox[2], *thr_vbox, *thr_scale[2];
-extern GtkObject *thr_adj[2];
+extern GtkAdjustment *thr_adj[2];
 
 /* reset buttons */
 extern GtkWidget *reset_button[2], *reset_hbox, *reset_align, *reset_button_icon[2];
@@ -40,3 +47,5 @@ extern GtkWidget *preview, *preview_reset, *preview_hbox, *preview_reset_icon;
 extern GtkWidget **radios_labels[];
 
 extern char **names;
+
+#endif /* __INTERFACE_H__ */

@@ -32,7 +32,7 @@ GSList *channel_list;
 /* threshold frame */
 GtkWidget *fr_threshold, *thr_label[2], *thr_spin[2];
 GtkWidget *thr_hbox[2], *thr_vbox, *thr_scale[2];
-GtkObject *thr_adj[2];
+GtkAdjustment *thr_adj[2];
 
 /* reset buttons */
 GtkWidget *reset_button[2], *reset_hbox, *reset_align, *reset_button_icon[2];
@@ -46,10 +46,16 @@ GtkWidget **radios_labels[] = { channel_radio, thr_label };
 char **names;
 
 
+static void
+preview_invalidated_cb (GimpPreview  *p,
+                        GimpDrawable *drawable)
+{
+  denoise (drawable, p);
+}
+
 gboolean
 user_interface (GimpDrawable * drawable)
 {
-  /* can ui code be beautiful? */
   GtkRequisition req;
   gboolean run;
   glong i;
@@ -68,43 +74,42 @@ user_interface (GimpDrawable * drawable)
 	names = names_rgb;
     }
 
-  gimp_ui_init (PLUGIN_NAME, FALSE);
+  gimp_ui_init (PLUG_IN_BINARY);
 
   /* prepare the preview */
-  preview = gimp_drawable_preview_new (drawable, &settings.preview);
-  preview_hbox = gimp_preview_get_controls ((GimpPreview *) preview);
-  g_signal_connect_swapped (preview, "invalidated", G_CALLBACK (denoise),
-			    drawable);
-  preview_check = gtk_container_get_children(GTK_CONTAINER(preview_hbox))->data;
+  preview = gimp_drawable_preview_new_from_drawable (drawable);
+  preview_hbox = gimp_preview_get_controls (GIMP_PREVIEW (preview));
+  g_signal_connect (preview, "invalidated",
+		    G_CALLBACK (preview_invalidated_cb), drawable);
+  if (preview_hbox && GTK_IS_CONTAINER (preview_hbox))
+    {
+      GList *children = gtk_container_get_children (GTK_CONTAINER (preview_hbox));
+      if (children)
+        preview_check = children->data;
+    }
   gtk_widget_show (preview);
 
   /* prepare the colour mode frame */
   if (channels > 2)
     {
       fr_mode = gtk_frame_new (_("Color model"));
-      mode_vbox = gtk_vbox_new (FALSE, 0);
-      gtk_container_border_width (GTK_CONTAINER (mode_vbox), 5);
+      mode_vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
+      gtk_container_set_border_width (GTK_CONTAINER (mode_vbox), 5);
       mode_radio[0] = gtk_radio_button_new_with_label (NULL,
-						       channels ==
-						       3 ? "YCbCr" :
-						       "YCbCr(A)");
-      mode_list =
-	gtk_radio_button_get_group (GTK_RADIO_BUTTON (mode_radio[0]));
+						       channels == 3 ? "YCbCr" : "YCbCr(A)");
       mode_radio[1] =
-	gtk_radio_button_new_with_label (mode_list,
-					 channels ==
-					 3 ? "CIELAB" : "CIELAB(A)");
-      mode_list =
-	gtk_radio_button_get_group (GTK_RADIO_BUTTON (mode_radio[1]));
+	gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (mode_radio[0]),
+						     channels == 3 ? "CIELAB" : "CIELAB(A)");
       mode_radio[2] =
-	gtk_radio_button_new_with_label (mode_list,
-					 channels == 3 ? "RGB" : "RGB(A)");
+	gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (mode_radio[0]),
+						     channels == 3 ? "RGB" : "RGB(A)");
       if (settings.colour_mode == MODE_YCBCR)
-	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (mode_radio[0]), 1);
-      else if (settings.colour_mode == MODE_RGB)
-	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (mode_radio[1]), 1);
+	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (mode_radio[0]), TRUE);
+      else if (settings.colour_mode == MODE_LAB)
+	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (mode_radio[1]), TRUE);
       else
-	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (mode_radio[2]), 1);
+	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (mode_radio[2]), TRUE);
+
       g_signal_connect (mode_radio[0], "toggled",
 			G_CALLBACK (set_ycbcr_mode), radios_labels);
       g_signal_connect (mode_radio[1], "toggled",
@@ -143,17 +148,14 @@ user_interface (GimpDrawable * drawable)
   if (channels > 1)
     {
       fr_preview = gtk_frame_new (_("Preview channel"));
-      preview_vbox = gtk_vbox_new (FALSE, 0);
-      gtk_container_border_width (GTK_CONTAINER (preview_vbox), 5);
+      preview_vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
+      gtk_container_set_border_width (GTK_CONTAINER (preview_vbox), 5);
       gtk_container_add (GTK_CONTAINER (fr_preview), preview_vbox);
 
-      preview_list = NULL;
       /* TRANSLATORS: *All* channels (from the preview select frame) */
-      preview_radio[0] = gtk_radio_button_new_with_label (preview_list,
-							  _("All"));
+      preview_radio[0] = gtk_radio_button_new_with_label (NULL, _("All"));
       if (settings.preview_mode == 0)
-	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (preview_radio[0]),
-				      1);
+	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (preview_radio[0]), TRUE);
       gtk_box_pack_start (GTK_BOX (preview_vbox), preview_radio[0], FALSE,
 			  FALSE, 0);
       g_signal_connect (preview_radio[0], "toggled",
@@ -164,16 +166,11 @@ user_interface (GimpDrawable * drawable)
       gtk_widget_set_tooltip_text (preview_radio[0], TT_PREVIEW_ALL);
       gtk_widget_show (preview_radio[0]);
 
-      preview_list =
-	gtk_radio_button_get_group (GTK_RADIO_BUTTON (preview_radio[0]));
       preview_radio[1] =
-	gtk_radio_button_new_with_label (preview_list,
-					 (channels >
-					  2) ? _("Selected (gray)") :
-					 _("Selected"));
+	gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (preview_radio[0]),
+						     (channels > 2) ? _("Selected (gray)") : _("Selected"));
       if (settings.preview_mode == 1)
-	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (preview_radio[1]),
-				      1);
+	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (preview_radio[1]), TRUE);
       gtk_box_pack_start (GTK_BOX (preview_vbox), preview_radio[1], FALSE,
 			  FALSE, 0);
       g_signal_connect (preview_radio[1], "toggled",
@@ -186,14 +183,11 @@ user_interface (GimpDrawable * drawable)
 
       if (channels > 2)
 	{
-	  preview_list =
-	    gtk_radio_button_get_group (GTK_RADIO_BUTTON (preview_radio[1]));
 	  preview_radio[2] =
-	    gtk_radio_button_new_with_label (preview_list,
-					     _("Selected (color)"));
+	    gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (preview_radio[0]),
+							 _("Selected (color)"));
 	  if (settings.preview_mode == 2)
-	    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON
-					  (preview_radio[2]), 1);
+	    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (preview_radio[2]), TRUE);
 	  gtk_box_pack_start (GTK_BOX (preview_vbox), preview_radio[2], FALSE,
 			      FALSE, 0);
 	  g_signal_connect (preview_radio[2], "toggled",
@@ -201,8 +195,7 @@ user_interface (GimpDrawable * drawable)
 	  g_signal_connect_swapped (preview_radio[2], "toggled",
 				    G_CALLBACK (gimp_preview_invalidate),
 				    preview);
-	  gtk_widget_set_tooltip_text (preview_radio[2],
-				       TT_PREVIEW_SEL_COLOUR);
+	  gtk_widget_set_tooltip_text (preview_radio[2], TT_PREVIEW_SEL_COLOUR);
 	  gtk_widget_show (preview_radio[2]);
 	}
       gtk_widget_show (preview_vbox);
@@ -215,18 +208,19 @@ user_interface (GimpDrawable * drawable)
   if (channels > 1)
     {
       fr_channel = gtk_frame_new (_("Channel select"));
-      channel_vbox = gtk_vbox_new (FALSE, 0);
-      gtk_container_border_width (GTK_CONTAINER (channel_vbox), 5);
+      channel_vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
+      gtk_container_set_border_width (GTK_CONTAINER (channel_vbox), 5);
       gtk_container_add (GTK_CONTAINER (fr_channel), channel_vbox);
 
-      channel_list = NULL;
       for (i = 0; i < channels; i++)
 	{
-	  channel_radio[i] =
-	    gtk_radio_button_new_with_label (channel_list, names[i]);
+	  if (i == 0)
+	    channel_radio[i] = gtk_radio_button_new_with_label (NULL, names[i]);
+	  else
+	    channel_radio[i] = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (channel_radio[0]), names[i]);
+
 	  if (settings.preview_channel == i)
-	    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON
-					  (channel_radio[i]), 1);
+	    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (channel_radio[i]), TRUE);
 	  g_signal_connect (channel_radio[i], "toggled",
 			    G_CALLBACK (set_preview_channel), (gpointer) i);
 	  g_signal_connect_swapped (channel_radio[i], "toggled",
@@ -236,8 +230,6 @@ user_interface (GimpDrawable * drawable)
 			      FALSE, 0);
 	  gtk_widget_set_tooltip_text (channel_radio[i], TT_SELECT);
 	  gtk_widget_show (channel_radio[i]);
-	  channel_list =
-	    gtk_radio_button_get_group (GTK_RADIO_BUTTON (channel_radio[i]));
 	}
       gtk_widget_show (channel_vbox);
       gtk_widget_show (fr_channel);
@@ -250,24 +242,25 @@ user_interface (GimpDrawable * drawable)
 				/* TRANSLATORS: Channel settings without the word 'channel'. */
 				_("Settings"));
   gtk_widget_show (fr_threshold);
-  thr_vbox = gtk_vbox_new (FALSE, 0);
+  thr_vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
   gtk_container_add (GTK_CONTAINER (fr_threshold), thr_vbox);
-  gtk_container_border_width (GTK_CONTAINER (thr_vbox), 5);
+  gtk_container_set_border_width (GTK_CONTAINER (thr_vbox), 5);
   gtk_widget_show (thr_vbox);
 
-  thr_hbox[0] = gtk_hbox_new (FALSE, 10);
+  thr_hbox[0] = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 10);
   thr_label[0] = gtk_label_new (_("Threshold"));
-  gtk_misc_set_alignment (GTK_MISC (thr_label[0]), 0.0, 0.0);
+  gtk_label_set_xalign (GTK_LABEL (thr_label[0]), 0.0);
+  gtk_label_set_yalign (GTK_LABEL (thr_label[0]), 0.0);
   if (channels > 2)
     thr_adj[0] =
-      gtk_adjustment_new (settings.colour_thresholds
-			  [settings.preview_channel], 0, 10, 0.01, 0.01, 0);
+      gtk_adjustment_new (settings.colour_thresholds[settings.preview_channel],
+			  0, 10, 0.01, 0.01, 0);
   else
     thr_adj[0] =
       gtk_adjustment_new (settings.gray_thresholds[settings.preview_channel],
 			  0, 10, 0.01, 0.01, 0);
-  thr_spin[0] = gtk_spin_button_new (GTK_ADJUSTMENT (thr_adj[0]), 0.01, 2);
-  thr_scale[0] = gtk_hscale_new (GTK_ADJUSTMENT (thr_adj[0]));
+  thr_spin[0] = gtk_spin_button_new (thr_adj[0], 0.01, 2);
+  thr_scale[0] = gtk_scale_new (GTK_ORIENTATION_HORIZONTAL, thr_adj[0]);
   gtk_scale_set_draw_value (GTK_SCALE (thr_scale[0]), FALSE);
   gtk_box_pack_start (GTK_BOX (thr_vbox), thr_hbox[0], FALSE, FALSE, 0);
   gtk_box_pack_start (GTK_BOX (thr_hbox[0]), thr_label[0], FALSE, FALSE, 0);
@@ -277,8 +270,8 @@ user_interface (GimpDrawable * drawable)
 			    G_CALLBACK (gimp_preview_invalidate), preview);
   g_signal_connect (thr_adj[0], "value_changed",
 		    G_CALLBACK (set_threshold), NULL);
-  gtk_widget_size_request(thr_scale[0], &req);
-  gtk_widget_set_size_request(thr_scale[0], 3 * req.width, req.height);
+  gtk_widget_get_preferred_size (thr_scale[0], &req, NULL);
+  gtk_widget_set_size_request (thr_scale[0], 3 * req.width, req.height);
   gtk_widget_show (thr_scale[0]);
   gtk_widget_show (thr_spin[0]);
   gtk_widget_show (thr_label[0]);
@@ -296,19 +289,20 @@ user_interface (GimpDrawable * drawable)
     }
   gtk_widget_show (thr_hbox[0]);
 
-  thr_hbox[1] = gtk_hbox_new (FALSE, 10);
+  thr_hbox[1] = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 10);
   thr_label[1] = gtk_label_new (_("Softness"));
-  gtk_misc_set_alignment (GTK_MISC (thr_label[1]), 0.0, 0.0);
+  gtk_label_set_xalign (GTK_LABEL (thr_label[1]), 0.0);
+  gtk_label_set_yalign (GTK_LABEL (thr_label[1]), 0.0);
   if (channels > 2)
     thr_adj[1] =
-      gtk_adjustment_new (settings.colour_low[settings.preview_channel], 0,
-			  1, 0.01, 0.01, 0);
+      gtk_adjustment_new (settings.colour_low[settings.preview_channel],
+			  0, 1, 0.01, 0.01, 0);
   else
     thr_adj[1] =
       gtk_adjustment_new (settings.gray_low[settings.preview_channel],
 			  0, 1, 0.01, 0.01, 0);
-  thr_spin[1] = gtk_spin_button_new (GTK_ADJUSTMENT (thr_adj[1]), 0.01, 2);
-  thr_scale[1] = gtk_hscale_new (GTK_ADJUSTMENT (thr_adj[1]));
+  thr_spin[1] = gtk_spin_button_new (thr_adj[1], 0.01, 2);
+  thr_scale[1] = gtk_scale_new (GTK_ORIENTATION_HORIZONTAL, thr_adj[1]);
   gtk_scale_set_draw_value (GTK_SCALE (thr_scale[1]), FALSE);
   gtk_box_pack_start (GTK_BOX (thr_vbox), thr_hbox[1], FALSE, FALSE, 0);
   gtk_box_pack_start (GTK_BOX (thr_hbox[1]), thr_label[1], FALSE, FALSE, 0);
@@ -317,8 +311,8 @@ user_interface (GimpDrawable * drawable)
   g_signal_connect_swapped (thr_adj[1], "value_changed",
 			    G_CALLBACK (gimp_preview_invalidate), preview);
   g_signal_connect (thr_adj[1], "value_changed", G_CALLBACK (set_low), NULL);
-  gtk_widget_size_request(thr_scale[1], &req);
-  gtk_widget_set_size_request(thr_scale[1], 3 * req.width, req.height);
+  gtk_widget_get_preferred_size (thr_scale[1], &req, NULL);
+  gtk_widget_set_size_request (thr_scale[1], 3 * req.width, req.height);
   gtk_widget_show (thr_scale[1]);
   gtk_widget_show (thr_spin[1]);
   gtk_widget_show (thr_label[1]);
@@ -337,12 +331,11 @@ user_interface (GimpDrawable * drawable)
   gtk_widget_show (thr_hbox[1]);
 
   /* prepare the reset buttons */
-  reset_hbox = gtk_hbox_new (FALSE, 10);
+  reset_hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 10);
   if (channels > 1)
     {
       preview_reset_icon =
-	gtk_image_new_from_stock (GTK_STOCK_GO_BACK, GTK_ICON_SIZE_BUTTON);
-      //preview_reset = gtk_button_new_with_label(_("Temporary reset"));
+	gtk_image_new_from_icon_name ("go-previous", GTK_ICON_SIZE_BUTTON);
       preview_reset = gtk_button_new ();
       gtk_button_set_image (GTK_BUTTON (preview_reset), preview_reset_icon);
       g_signal_connect (preview_reset, "pressed",
@@ -356,17 +349,15 @@ user_interface (GimpDrawable * drawable)
     }
 
   reset_button_icon[0] =
-    gtk_image_new_from_stock (GIMP_STOCK_RESET, GTK_ICON_SIZE_BUTTON);
+    gtk_image_new_from_icon_name ("gimp-reset", GTK_ICON_SIZE_BUTTON);
   reset_button[0] =
-    gtk_button_new_with_label ((channels >
-				1) ? _("Reset channel") : _("Reset"));
+    gtk_button_new_with_label ((channels > 1) ? _("Reset channel") : _("Reset"));
   gtk_button_set_image (GTK_BUTTON (reset_button[0]), reset_button_icon[0]);
   g_signal_connect (reset_button[0], "clicked", G_CALLBACK (reset_channel),
 		    NULL);
   gtk_box_pack_start (GTK_BOX (reset_hbox), reset_button[0], FALSE, FALSE, 0);
   gtk_widget_set_tooltip_text (reset_button[0],
-			       (channels >
-				1) ? TT_RESET_CHANNEL_COLOUR :
+			       (channels > 1) ? TT_RESET_CHANNEL_COLOUR :
 			       TT_RESET_CHANNEL_GRAY);
   gtk_widget_show (reset_button[0]);
 
@@ -374,28 +365,26 @@ user_interface (GimpDrawable * drawable)
     {
       /* TRANSLATORS: Reset all [channels] */
       reset_button_icon[1] =
-	gtk_image_new_from_stock (GIMP_STOCK_RESET, GTK_ICON_SIZE_BUTTON);
+	gtk_image_new_from_icon_name ("gimp-reset", GTK_ICON_SIZE_BUTTON);
       reset_button[1] = gtk_button_new_with_label (_("Reset all"));
       gtk_button_set_image (GTK_BUTTON (reset_button[1]),
 			    reset_button_icon[1]);
-      gtk_button_set_use_stock (GTK_BUTTON (reset_button[1]), TRUE);
       g_signal_connect (reset_button[1], "clicked", G_CALLBACK (reset_all),
 			NULL);
       g_signal_connect_swapped (reset_button[1], "clicked",
 				G_CALLBACK (gimp_preview_invalidate),
 				preview);
-      gtk_box_pack_start (GTK_BOX (reset_hbox), reset_button[1], FALSE, FALSE,
-			  0);
+      gtk_box_pack_start (GTK_BOX (reset_hbox), reset_button[1], FALSE, FALSE, 0);
       gtk_widget_set_tooltip_text (reset_button[1], TT_RESET_ALL);
       gtk_widget_show (reset_button[1]);
     }
   gtk_widget_show (reset_hbox);
 
-  /* prepeare the dialog boxes */
-  frame_hbox = gtk_hbox_new (FALSE, 10);
+  /* prepare the dialog boxes */
+  frame_hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 10);
   gtk_box_set_homogeneous (GTK_BOX (frame_hbox), FALSE);
-  dialog_vbox = gtk_vbox_new (FALSE, 10);
-  dialog_hbox = gtk_hbox_new (FALSE, 10);
+  dialog_vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 10);
+  dialog_hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 10);
   gtk_container_set_border_width (GTK_CONTAINER (dialog_hbox), 10);
 
   gtk_box_pack_start (GTK_BOX (dialog_hbox), preview, TRUE, TRUE, 0);
@@ -404,11 +393,15 @@ user_interface (GimpDrawable * drawable)
   gtk_box_pack_start (GTK_BOX (dialog_vbox), frame_hbox, FALSE, FALSE, 0);
   gtk_box_pack_start (GTK_BOX (dialog_vbox), fr_threshold, FALSE, FALSE, 0);
   gtk_box_pack_start (GTK_BOX (dialog_vbox), reset_hbox, FALSE, FALSE, 0);
+
   /* avoid destruction of the preview check widget and reparent it */
-  g_object_ref(preview_check);
-  gtk_container_remove(GTK_CONTAINER(preview_hbox), preview_check);
-  gtk_box_pack_start (GTK_BOX (dialog_vbox), preview_check, FALSE, FALSE, 0);
-  g_object_unref(preview_check);
+  if (preview_check && preview_hbox)
+    {
+      g_object_ref (preview_check);
+      gtk_container_remove (GTK_CONTAINER (preview_hbox), preview_check);
+      gtk_box_pack_start (GTK_BOX (dialog_vbox), preview_check, FALSE, FALSE, 0);
+      g_object_unref (preview_check);
+    }
 
   if (fr_preview)
     gtk_box_pack_start (GTK_BOX (frame_hbox), fr_preview, TRUE, TRUE, 0);
@@ -417,18 +410,19 @@ user_interface (GimpDrawable * drawable)
   if (fr_mode)
     gtk_box_pack_start (GTK_BOX (frame_hbox), fr_mode, TRUE, TRUE, 0);
 
-  /* prepeare the dialog */
-  dialog = gimp_dialog_new (PLUGIN_NAME, "wavelet denoise", NULL, 0,
+  /* prepare the dialog */
+  dialog = gimp_dialog_new (PLUGIN_NAME, "plug-in-wavelet-denoise", NULL, (GtkDialogFlags) 0,
 			    gimp_standard_help_func,
-			    "plug-in-wavelet-denoise", GTK_STOCK_CANCEL,
-			    GTK_RESPONSE_CANCEL, GTK_STOCK_OK,
-			    GTK_RESPONSE_OK, NULL);
-  gtk_container_add (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox), dialog_hbox);
+			    "plug-in-wavelet-denoise",
+			    _("_Cancel"), GTK_RESPONSE_CANCEL,
+			    _("_OK"), GTK_RESPONSE_OK,
+			    NULL);
+  gtk_container_add (GTK_CONTAINER (gtk_dialog_get_content_area (GTK_DIALOG (dialog))), dialog_hbox);
 
   gtk_window_set_position (GTK_WINDOW (dialog), GTK_WIN_POS_CENTER);
 
   /* size required for proper noise profiling */
-  gtk_widget_set_size_request(preview, 300, 304);
+  gtk_widget_set_size_request (preview, 300, 304);
 
   if (settings.winxsize > 0 && settings.winysize > 0)
     gtk_window_resize (GTK_WINDOW (dialog), settings.winxsize,
@@ -444,7 +438,6 @@ user_interface (GimpDrawable * drawable)
   gtk_window_get_size (GTK_WINDOW (dialog), &(settings.winxsize),
 		       &(settings.winysize));
 
-  /* FIXME: destroy all widgets - memory leak! */
   gtk_widget_destroy (dialog);
 
   return run;

@@ -53,7 +53,7 @@ temporarily_reset (GtkWidget * w, gpointer data)
 	  settings.gray_low[current] = low;
 	}
     }
-  gimp_preview_invalidate ((GimpPreview *) preview);
+  gimp_preview_invalidate (GIMP_PREVIEW (preview));
 }
 
 void
@@ -69,8 +69,8 @@ reset_channel (GtkWidget * w, gpointer data)
       settings.gray_thresholds[settings.preview_channel] = 0.0;
       settings.gray_low[settings.preview_channel] = 0.0;
     }
-  gtk_adjustment_set_value (GTK_ADJUSTMENT (thr_adj[0]), 0);
-  gtk_adjustment_set_value (GTK_ADJUSTMENT (thr_adj[1]), 0.0);
+  gtk_adjustment_set_value (thr_adj[0], 0);
+  gtk_adjustment_set_value (thr_adj[1], 0.0);
 }
 
 void
@@ -100,8 +100,8 @@ reset_all (GtkWidget * w, gpointer data)
 	  settings.gray_low[1] = 0.0;
 	}
     }
-  gtk_adjustment_set_value (GTK_ADJUSTMENT (thr_adj[0]), 0);
-  gtk_adjustment_set_value (GTK_ADJUSTMENT (thr_adj[1]), 0.0);
+  gtk_adjustment_set_value (thr_adj[0], 0);
+  gtk_adjustment_set_value (thr_adj[1], 0.0);
 }
 
 void
@@ -154,16 +154,16 @@ set_preview_channel (GtkWidget * w, gpointer data)
   settings.preview_channel = c;
   if (channels > 2)
     {
-      gtk_adjustment_set_value (GTK_ADJUSTMENT (thr_adj[0]),
+      gtk_adjustment_set_value (thr_adj[0],
 				settings.colour_thresholds[c]);
-      gtk_adjustment_set_value (GTK_ADJUSTMENT (thr_adj[1]),
+      gtk_adjustment_set_value (thr_adj[1],
 				settings.colour_low[c]);
     }
   else
     {
-      gtk_adjustment_set_value (GTK_ADJUSTMENT (thr_adj[0]),
+      gtk_adjustment_set_value (thr_adj[0],
 				settings.gray_thresholds[c]);
-      gtk_adjustment_set_value (GTK_ADJUSTMENT (thr_adj[1]),
+      gtk_adjustment_set_value (thr_adj[1],
 				settings.gray_low[c]);
     }
 }
@@ -189,3 +189,4 @@ set_low (GtkWidget * w, gpointer data)
   else
     settings.gray_low[settings.preview_channel] = val;
 }
+

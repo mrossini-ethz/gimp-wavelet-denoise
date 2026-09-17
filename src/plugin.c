@@ -15,7 +15,12 @@
 
 #include "plugin.h"
 
-GimpPlugInInfo PLUG_IN_INFO = { NULL, NULL, query, run };
+#include "plugin.h"
+
+G_DEFINE_TYPE (WaveletDenoise, wavelet_denoise, GIMP_TYPE_PLUG_IN)
+
+GIMP_MAIN (WAVELET_DENOISE_TYPE)
+
 /* Global variables declared in plugin.h */
 float *fimg[4];
 float *buffer[3];
@@ -41,105 +46,165 @@ char *names_rgb[] = { "R", "G", "B", N_("Alpha") };
 char *names_gray[] = { "Gray", N_("Alpha") };
 char *names_lab[] = { "L*", "a*", "b*", N_("Alpha") };
 
-MAIN ()
-     void query (void)
+static GList *
+wavelet_denoise_query_procedures (GimpPlugIn *plug_in)
 {
-  static GimpParamDef args[] = {
-    /* TRANSLATORS: This is a plugin argument for scripts */
-    {GIMP_PDB_INT32, "run-mode", "Run mode"},
-    /* TRANSLATORS: This is a plugin argument for scripts */
-    {GIMP_PDB_IMAGE, "image", "Input image"},
-    /* TRANSLATORS: This is a plugin argument for scripts */
-    {GIMP_PDB_DRAWABLE, "drawable", "Input drawable"}
-  };
-
-  gimp_install_procedure ("plug-in-wavelet-denoise",
-			  _("Removes noise in the image using wavelets."),
-			  PLUGIN_HELP,
-			  _("Marco Rossini"),
-			  _("Copyright 2008 Marco Rossini"),
-			  "2008",
-			  /* TRANSLATORS: Menu entry of the plugin. Use under-
-			     score for identifying hotkey */
-			  N_("_Wavelet denoise ..."),
-			  "RGB*, GRAY*",
-			  GIMP_PLUGIN, G_N_ELEMENTS (args), 0, args, NULL);
-
-  gimp_plugin_domain_register("gimp20-wavelet-denoise-plug-in", LOCALEDIR);
-  
-  gimp_plugin_menu_register ("plug-in-wavelet-denoise",
-			     "<Image>/Filters/Enhance");
+  return g_list_append (NULL, g_strdup ("plug-in-wavelet-denoise"));
 }
 
-void
-run (const gchar * name, gint nparams, const GimpParam * param,
-     gint * nreturn_vals, GimpParam ** return_vals)
+static GimpValueArray *
+wavelet_denoise_run (GimpProcedure        *procedure,
+                     GimpRunMode           run_mode,
+                     GimpImage            *image,
+                     GimpDrawable        **drawables,
+                     GimpProcedureConfig  *config,
+                     gpointer              run_data)
 {
-  static GimpParam values[1];
-  GimpRunMode run_mode;
   GimpDrawable *drawable;
   gint i;
+  gint width, height;
+  GimpParasite *parasite;
 
-  bindtextdomain("gimp20-wavelet-denoise-plug-in", LOCALEDIR);
-  textdomain("gimp20-wavelet-denoise-plug-in");
-  bind_textdomain_codeset("gimp20-wavelet-denoise-plug-in", "UTF-8");
+  if (drawables == NULL || drawables[0] == NULL)
+    {
+      return gimp_procedure_new_return_values (procedure,
+                                                GIMP_PDB_CALLING_ERROR,
+                                                NULL);
+    }
+
+  drawable = drawables[0];
+
+  if (gimp_drawable_is_rgb (drawable))
+    channels = gimp_drawable_has_alpha (drawable) ? 4 : 3;
+  else
+    channels = gimp_drawable_has_alpha (drawable) ? 2 : 1;
+
+  width = gimp_drawable_get_width (drawable);
+  height = gimp_drawable_get_height (drawable);
 
   timer = g_timer_new ();
 
-  /* Setting mandatory output values */
-  *nreturn_vals = 1;
-  *return_vals = values;
-  values[0].type = GIMP_PDB_STATUS;
-  values[0].data.d_status = GIMP_PDB_SUCCESS;
-
-  /* restore settings saved in GIMP core */
-  gimp_get_data ("plug-in-wavelet-denoise", &settings);
-
-  drawable = gimp_drawable_get (param[2].data.d_drawable);
-  channels = gimp_drawable_bpp (drawable->drawable_id);
+  /* restore settings saved in GIMP core parasite */
+  parasite = gimp_get_parasite ("plug-in-wavelet-denoise-settings");
+  if (parasite)
+    {
+      guint32 size = 0;
+      const void *data = gimp_parasite_get_data (parasite, &size);
+      if (size == sizeof (wavelet_settings))
+        memcpy (&settings, data, sizeof (wavelet_settings));
+      gimp_parasite_free (parasite);
+    }
 
   if (settings.preview_channel > channels - 1)
     settings.preview_channel = 0;
 
   /* allocate buffers */
-  /* FIXME: replace by GIMP funcitons */
   for (i = 0; i < channels; i++)
     {
-      fimg[i] = (float *) malloc (drawable->width * drawable->height
-				  * sizeof (float));
+      fimg[i] = (float *) malloc (width * height * sizeof (float));
     }
-  buffer[1] = (float *) malloc (drawable->width * drawable->height
-				* sizeof (float));
-  buffer[2] = (float *) malloc (drawable->width * drawable->height
-				* sizeof (float));
+  buffer[1] = (float *) malloc (width * height * sizeof (float));
+  buffer[2] = (float *) malloc (width * height * sizeof (float));
 
-  /* run GUI if in interactiv mode */
-  run_mode = param[0].data.d_int32;
+  /* run GUI if in interactive mode */
   if (run_mode == GIMP_RUN_INTERACTIVE)
     {
       if (!user_interface (drawable))
 	{
-	  gimp_drawable_detach (drawable);
-	  /* FIXME: should return error status here */
-	  return;
+	  for (i = 0; i < channels; i++)
+	    free (fimg[i]);
+	  free (buffer[1]);
+	  free (buffer[2]);
+	  g_timer_destroy (timer);
+	  return gimp_procedure_new_return_values (procedure,
+						    GIMP_PDB_CANCEL,
+						    NULL);
 	}
     }
 
   denoise (drawable, NULL);
 
   /* free buffers */
-  /* FIXME: replace by GIMP functions */
   for (i = 0; i < channels; i++)
     {
       free (fimg[i]);
     }
   free (buffer[1]);
   free (buffer[2]);
+  g_timer_destroy (timer);
 
   gimp_displays_flush ();
-  gimp_drawable_detach (drawable);
 
-  /* save settings in the GIMP core */
-  gimp_set_data ("plug-in-wavelet-denoise", &settings,
-		 sizeof (wavelet_settings));
+  /* save settings in GIMP core parasite */
+  parasite = gimp_parasite_new ("plug-in-wavelet-denoise-settings",
+                                GIMP_PARASITE_PERSISTENT,
+                                sizeof (wavelet_settings),
+                                &settings);
+  gimp_attach_parasite (parasite);
+  gimp_parasite_free (parasite);
+
+  return gimp_procedure_new_return_values (procedure,
+                                            GIMP_PDB_SUCCESS,
+                                            NULL);
 }
+
+static GimpProcedure *
+wavelet_denoise_create_procedure (GimpPlugIn  *plug_in,
+                                  const gchar *name)
+{
+  GimpProcedure *procedure = NULL;
+
+  if (g_strcmp0 (name, "plug-in-wavelet-denoise") == 0)
+    {
+      procedure = gimp_image_procedure_new (plug_in, name,
+                                            GIMP_PDB_PROC_TYPE_PLUGIN,
+                                            wavelet_denoise_run, NULL, NULL);
+
+      gimp_procedure_set_image_types (procedure, "RGB*, GRAY*");
+      gimp_procedure_set_sensitivity_mask (procedure,
+                                            GIMP_PROCEDURE_SENSITIVE_DRAWABLE);
+
+      /* TRANSLATORS: Menu entry of the plugin. Use under-
+         score for identifying hotkey */
+      gimp_procedure_set_menu_label (procedure, N_("_Wavelet denoise..."));
+      gimp_procedure_add_menu_path (procedure, "<Image>/Filters/Enhance");
+
+      gimp_procedure_set_documentation (procedure,
+                                         _("Removes noise in the image using wavelets."),
+                                         PLUGIN_HELP,
+                                         name);
+      gimp_procedure_set_attribution (procedure,
+                                       _("Marco Rossini"),
+                                       _("Copyright 2008 Marco Rossini"),
+                                       "2008");
+    }
+
+  return procedure;
+}
+
+static gboolean
+wavelet_denoise_set_i18n (GimpPlugIn   *plug_in,
+                          const gchar  *procedure_name,
+                          gchar       **gettext_domain,
+                          gchar       **catalog_dir)
+{
+  *gettext_domain = g_strdup ("gimp20-wavelet-denoise-plug-in");
+  *catalog_dir    = g_strdup (LOCALEDIR);
+  return TRUE;
+}
+
+static void
+wavelet_denoise_class_init (WaveletDenoiseClass *klass)
+{
+  GimpPlugInClass *plug_in_class = GIMP_PLUG_IN_CLASS (klass);
+
+  plug_in_class->query_procedures = wavelet_denoise_query_procedures;
+  plug_in_class->create_procedure = wavelet_denoise_create_procedure;
+  plug_in_class->set_i18n         = wavelet_denoise_set_i18n;
+}
+
+static void
+wavelet_denoise_init (WaveletDenoise *denoise)
+{
+}
+

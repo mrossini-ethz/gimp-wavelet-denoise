@@ -1,6 +1,16 @@
 ChangeLog
 =========
 
+wavelet-denoise v0.5 (GIMP 3 port)
+-------------------------------------------------------------------------------
+- Ported to GIMP 3 and GTK 3.
+- Replaced legacy GimpPlugInInfo and MAIN() with GimpPlugIn GObject subclassing.
+- Replaced deprecated GimpPixelRgn with GEGL buffers and Babl color formats.
+- Migrated persistent plugin settings to GimpParasite.
+- Modernized user interface to GTK 3 (GtkBox, GtkScale, GtkAdjustment, themed icon names).
+- Ensured canonical program identifier usage for gimp_ui_init to satisfy
+  GIMP 3 PDB data key requirements.
+
 wavelet-denoise v0.4
 -------------------------------------------------------------------------------
 - Added translations:

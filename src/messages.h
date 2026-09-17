@@ -19,6 +19,8 @@
 /* TRANSLATORS: This is the name of the plugin as it appears in menus, the
    interface window title and such */
 #define PLUGIN_NAME _("Wavelet denoise")
+#define PLUG_IN_BINARY "wavelet-denoise"
+#define PLUG_IN_PROC   "plug-in-wavelet-denoise"
 
 #define PLUGIN_HELP _("This plugin allows the separate denoising of image channels in multiple color spaces using wavelets.")
 

@@ -18,11 +18,13 @@
 void
 denoise (GimpDrawable * drawable, GimpPreview * preview)
 {
-  GimpPixelRgn rgn_in, rgn_out;
   gint i, x1, y1, x2, y2, width, height, x, c;
-  guchar *line;
+  guchar *buffer_bytes;
   float times[3], totaltime;
   int channels_denoised;
+  GeglBuffer *src_buffer;
+  GeglRectangle rect;
+  const Babl *format;
 
   if (preview)
     {
@@ -33,18 +35,13 @@ denoise (GimpDrawable * drawable, GimpPreview * preview)
     }
   else
     {
-      gimp_drawable_mask_bounds (drawable->drawable_id, &x1, &y1, &x2, &y2);
+      gimp_drawable_mask_bounds (drawable, &x1, &y1, &x2, &y2);
       width = x2 - x1;
       height = y2 - y1;
     }
 
-  gimp_pixel_rgn_init (&rgn_in, drawable, x1, y1, width, height, FALSE,
-		       FALSE);
-  gimp_pixel_rgn_init (&rgn_out, drawable, x1, y1, width, height,
-		       preview == NULL, TRUE);
-
-  /* cache some tiles to make reading/writing faster */
-  gimp_tile_cache_ntiles (drawable->width / gimp_tile_width () + 1);
+  if (width <= 0 || height <= 0)
+    return;
 
   totaltime = settings.times[0];
   totaltime += settings.times[2];
@@ -56,27 +53,42 @@ denoise (GimpDrawable * drawable, GimpPreview * preview)
 	totaltime += settings.times[1];
     }
 
-  /* FIXME: replace by GIMP functions */
-  line = (guchar *) malloc (channels * width * sizeof (guchar));
+  buffer_bytes = (guchar *) malloc (channels * width * height * sizeof (guchar));
 
-  /* read the full image from GIMP */
+  if (channels == 1)
+    format = babl_format ("Y' u8");
+  else if (channels == 2)
+    format = babl_format ("Y'A u8");
+  else if (channels == 3)
+    format = babl_format ("R'G'B' u8");
+  else
+    format = babl_format ("R'G'B'A u8");
+
+  src_buffer = gimp_drawable_get_buffer (drawable);
+  rect.x = x1;
+  rect.y = y1;
+  rect.width = width;
+  rect.height = height;
+
+  gegl_buffer_get (src_buffer, &rect, 1.0, format, buffer_bytes, GEGL_AUTO_ROWSTRIDE, GEGL_ABYSS_NONE);
+
+  /* read the image from GIMP */
   if (!preview)
     /* TRANSLATORS: This is the message displayed while denoising is in
        progress */
     gimp_progress_init (_("Wavelet denoising..."));
   times[0] = g_timer_elapsed (timer, NULL);
-  for (i = 0; i < y2 - y1; i++)
+  for (i = 0; i < height; i++)
     {
       if (!preview && i % 10 == 0)
 	gimp_progress_update (settings.times[0] * i
 			      / (double) height / totaltime);
-      gimp_pixel_rgn_get_row (&rgn_in, line, x1, i + y1, width);
 
       /* convert pixel values to float [0,1] */
       for (c = 0; c < channels; c++)
 	{
 	  for (x = 0; x < width; x++)
-	    fimg[c][i * width + x] = line[x * channels + c] / 255.0;
+	    fimg[c][i * width + x] = buffer_bytes[(i * width + x) * channels + c] / 255.0;
 	}
     }
   times[0] = g_timer_elapsed (timer, NULL) - times[0];
@@ -94,7 +106,6 @@ denoise (GimpDrawable * drawable, GimpPreview * preview)
 
   /* denoise the channels individually */
   times[1] = g_timer_elapsed (timer, NULL);
-  /* FIXME: variable abuse (x) */
   channels_denoised = 0;
   for (c = 0; c < channels; c++)
     {
@@ -123,7 +134,8 @@ denoise (GimpDrawable * drawable, GimpPreview * preview)
 	}
     }
   times[1] = g_timer_elapsed (timer, NULL) - times[1];
-  times[1] /= channels_denoised;
+  if (channels_denoised > 0)
+    times[1] /= channels_denoised;
 
   /* retransform the image data */
   if (channels > 2) {
@@ -164,7 +176,7 @@ denoise (GimpDrawable * drawable, GimpPreview * preview)
 	}
     }
 
-  /* write the image back to GIMP */
+  /* write the image back */
   times[2] = g_timer_elapsed (timer, NULL);
   for (i = 0; i < height; i++)
     {
@@ -178,12 +190,10 @@ denoise (GimpDrawable * drawable, GimpPreview * preview)
 	{
 	  for (x = 0; x < width; x++)
 	    {
-	      /* avoiding rounding errors !!! */
-	      line[x * channels + c] =
+	      buffer_bytes[(i * width + x) * channels + c] =
 		(guchar) (fimg[c][i * width + x] + 0.5);
 	    }
 	}
-      gimp_pixel_rgn_set_row (&rgn_out, line, x1, i + y1, width);
     }
   times[2] = g_timer_elapsed (timer, NULL) - times[2];
 
@@ -196,16 +206,25 @@ denoise (GimpDrawable * drawable, GimpPreview * preview)
       g_print("%f, %f, %f\n", times[0], times[1], times[2]);
     }
 
-  /* FIXME: replace by gimp functions */
-  free (line);
-
   if (preview)
     {
-      gimp_drawable_preview_draw_region (GIMP_DRAWABLE_PREVIEW (preview),
-					 &rgn_out);
+      gimp_preview_draw_buffer (preview, buffer_bytes, width * channels);
+      free (buffer_bytes);
+      g_object_unref (src_buffer);
       return;
     }
-  gimp_drawable_flush (drawable);
-  gimp_drawable_merge_shadow (drawable->drawable_id, TRUE);
-  gimp_drawable_update (drawable->drawable_id, x1, y1, width, height);
+
+  {
+    GeglBuffer *dest_buffer = gimp_drawable_get_shadow_buffer (drawable);
+    gegl_buffer_set (dest_buffer, &rect, 0, format, buffer_bytes, GEGL_AUTO_ROWSTRIDE);
+    gegl_buffer_flush (dest_buffer);
+    g_object_unref (dest_buffer);
+  }
+
+  free (buffer_bytes);
+  g_object_unref (src_buffer);
+
+  gimp_drawable_merge_shadow (drawable, TRUE);
+  gimp_drawable_update (drawable, x1, y1, width, height);
 }
+

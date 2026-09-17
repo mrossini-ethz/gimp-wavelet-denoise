@@ -42,9 +42,14 @@
 #define MODE_RGB 1
 #define MODE_LAB 2
 
-void query (void);
-void run (const gchar * name, gint nparams, const GimpParam * param,
-		 gint * nreturn_vals, GimpParam ** return_vals);
+#define WAVELET_DENOISE_TYPE (wavelet_denoise_get_type ())
+G_DECLARE_FINAL_TYPE (WaveletDenoise, wavelet_denoise, WAVELET, DENOISE, GimpPlugIn)
+
+struct _WaveletDenoise
+{
+  GimpPlugIn parent_instance;
+};
+
 void wavelet_denoise (float *fimg[3], unsigned int width,
 			     unsigned int height, float threshold, double low,
 			     float a, float b);
@@ -69,8 +74,6 @@ void srgb2lab (float **fimg, int size);
 void lab2srgb (float **fimg, int size, int pc);
 void srgb2xyz (float **fimg, int size);
 void xyz2srgb (float **fimg, int size, int pc);
-
-extern GimpPlugInInfo PLUG_IN_INFO;
 
 typedef struct
 {

@@ -1,5 +1,5 @@
-CFLAGS += -O3 -ldl -Wall $(shell gimptool-2.0 --cflags)
-LIBS = $(shell gimptool-2.0 --libs) -lm
+CFLAGS += -O3 -ldl -Wall $(shell gimptool --cflags)
+LIBS = $(shell gimptool --libs) -lm
 PLUGIN = wavelet-denoise
 SOURCES = plugin.c colorspace.c denoise.c wavelet.c events.c interface.c
 HEADERS = plugin.h interface.h messages.h
@@ -19,16 +19,17 @@ $(PLUGIN): $(OBJECTS)
 	$(CC) $(CFLAGS) -c -o $@ $*.c
 	
 install: $(PLUGIN)
-	@gimptool-2.0 --install-admin-bin $^
+	@gimptool --install-admin-bin $^
 
 userinstall: $(PLUGIN)
-	@gimptool-2.0 --install-bin $^
+	@gimptool --install-bin $^
 
 uninstall:
-	@gimptool-2.0 --uninstall-admin-bin $(PLUGIN)
+	@gimptool --uninstall-admin-bin $(PLUGIN)
 
 useruninstall:
-	@gimptool-2.0 --uninstall-bin $(PLUGIN)
+	@gimptool --uninstall-bin $(PLUGIN)
 
 clean:
 	rm -f *.o $(PLUGIN)
+
