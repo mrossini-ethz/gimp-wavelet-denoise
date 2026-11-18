@@ -5,9 +5,9 @@
 # the installed plug-ins and the user's settings are not touched. GIMP
 # and the build run isolated from the user's folders (tests/isolate.sh,
 # with gimp-devtools/gimp-run.sh if it is there): HOME and the XDG
-# folders point into tests/output/gimp-home. With gimp-devtools, a listing of the user's folders of GIMP and the
-# other apps (its snapshot.sh) before and after checks that nothing there
-# changed.
+# folders point into tests/output/gimp-home. With gimp-devtools, a
+# listing of the user's folders of GIMP and the other apps (its
+# snapshot.sh) before and after checks that nothing there changed.
 #
 # GIMP is the native GIMP 3 on the PATH, with its development files
 # (libgimp-3.0-dev); with gimp-devtools next to this repo, its gimp-env.sh
