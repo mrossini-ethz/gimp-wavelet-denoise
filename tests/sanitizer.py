@@ -32,7 +32,9 @@ for path in reports:
         if not re.match(r'(Direct|Indirect) leak', block.strip()):
             continue
         frames = re.findall(r'#\d+ \S+ in (\S+) (\S+)', block)
-        own = [f for f in frames if '/src/' in f[1]]
+        # (the sanitizer runtime's own frames are in .../src/libsanitizer)
+        own = [f for f in frames
+               if '/src/' in f[1] and '/libsanitizer/' not in f[1]]
         if not own or any(fn == 'gegl_init' or fn.endswith('_create_procedure')
                           for fn, _ in frames):
             ignored += 1

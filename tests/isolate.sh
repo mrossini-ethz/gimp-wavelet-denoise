@@ -9,13 +9,14 @@
 #
 #   gimp_run [--timeout=SECONDS] [gimp-run.sh options] -- <command...>
 #       the command as gimp-devtools/gimp-run.sh runs it (see
-#       there): in the Flatpak (natively with GIMP_FLATPAK=0), with HOME
-#       and the XDG folders in the throwaway $GIMP_RUN_HOME (or --home=)
-#       and no GVFS. --timeout ends it after that many seconds (exit
-#       code 124). Without gimp-devtools the same is done here,
-#       for the options --home=, --env=, --filesystem=, --devel, --app=,
-#       --native and --flatpak (in that form, and a -- before the command;
-#       --env cannot set XDG_* there)
+#       there): GIMP natively, another app (--app=) in its Flatpak if
+#       that is installed, with HOME and the XDG folders in the
+#       throwaway $GIMP_RUN_HOME (or --home=) and no GVFS. --timeout ends
+#       it after that many seconds (exit code 124). Without
+#       gimp-devtools the same is done here, for the options --home=,
+#       --env=, --filesystem=, --devel, --app=, --native and --flatpak (in
+#       that form, and a -- before the command; --env cannot set XDG_*
+#       there)
 #   snapshot_take <file>
 #       lists the user's folders of GIMP, Blender, Godot, Krita and Tiled
 #       (gimp-devtools/snapshot.sh) into the file
@@ -35,8 +36,8 @@ gimp_run () {
     gr_timeout=
     case $1 in --timeout=*) gr_timeout=${1#--timeout=}; shift ;; esac
     if [ -x "$devtools/gimp-run.sh" ]; then
-        # (also when GIMP_RUN_HOME and GIMP_FLATPAK are not exported)
-        GIMP_FLATPAK=${GIMP_FLATPAK:-} ${gr_timeout:+timeout "$gr_timeout"} \
+        # (also when GIMP_RUN_HOME is not exported)
+        ${gr_timeout:+timeout "$gr_timeout"} \
           "$devtools/gimp-run.sh" ${GIMP_RUN_HOME:+--home="$GIMP_RUN_HOME"} "$@"
         return
     fi
@@ -54,9 +55,11 @@ gimp_run () {
     [ -n "$gr_home" ] || { echo "gimp_run: no GIMP_RUN_HOME" >&2; return 2; }
     mkdir -p "$gr_home" || return 2
     gr_home=$(CDPATH='' cd -- "$gr_home" && pwd) || return 2
-    if [ -z "$gr_mode" ]; then
-        gr_mode=flatpak
-        [ "$gr_app" = org.gimp.GIMP ] && [ "${GIMP_FLATPAK:-}" = 0 ] && gr_mode=native
+    if [ "$gr_app" = org.gimp.GIMP ]; then
+        gr_mode=native
+    elif [ -z "$gr_mode" ]; then
+        gr_mode=native
+        flatpak info "$gr_app" >/dev/null 2>&1 && gr_mode=flatpak
     fi
     # the arguments are rebuilt behind the old ones, which are shifted away
     gr_n=$#

@@ -5,17 +5,14 @@
 # the installed plug-ins and the user's settings are not touched. GIMP
 # and the build run isolated from the user's folders (tests/isolate.sh,
 # with gimp-devtools/gimp-run.sh if it is there): HOME and the XDG
-# folders, also inside the Flatpak, point into tests/output/gimp-home, so
-# nothing lands in ~/.var/app/org.gimp.GIMP either. With
-# gimp-devtools, a listing of the user's folders of GIMP and the
+# folders point into tests/output/gimp-home. With gimp-devtools, a listing of the user's folders of GIMP and the
 # other apps (its snapshot.sh) before and after checks that nothing there
 # changed.
 #
-# With gimp-devtools next to this repo, its gimp-env.sh finds GIMP:
-# the Flatpak if it is installed (the build runs in its SDK), otherwise the
-# GIMP on the PATH; GIMP_FLATPAK=0 or 1 chooses. Without it, meson, ninja
-# and gimp-console come from the system. GIMP_CONSOLE sets the gimp-console
-# of a native GIMP, e.g. GIMP_CONSOLE=gimp-console-3.2.
+# GIMP is the native GIMP 3 on the PATH, with its development files
+# (libgimp-3.0-dev); with gimp-devtools next to this repo, its gimp-env.sh
+# finds it and checks the version. GIMP_CONSOLE sets the gimp-console to
+# use, e.g. GIMP_CONSOLE=gimp-console-3.2.
 #
 # Extra meson options can be given, e.g. for a sanitizer build:
 #   tests/run.sh -Db_sanitize=address,undefined
@@ -27,20 +24,23 @@ here=$(cd "$(dirname "$0")" && pwd)
 top=$(dirname "$here")
 out="$here/output"
 devtools="$top/../gimp-devtools"
+console=${GIMP_CONSOLE:-}
+GIMP_SERIES=
 if [ -f "$devtools/gimp-env.sh" ]; then
   . "$devtools/gimp-env.sh"
   [ -z "$GIMP_ENV_ERROR" ] || { echo "$0: $GIMP_ENV_ERROR" >&2; exit 1; }
-else
-  GIMP_FLATPAK=0 GIMP_SERIES=
+fi
+# gimp-console-3.2, or gimp-console if there is no such command
+if [ -z "$console" ]; then
+  console=gimp-console
+  if [ -n "$GIMP_SERIES" ] && command -v "gimp-console-$GIMP_SERIES" > /dev/null; then
+    console=gimp-console-$GIMP_SERIES
+  fi
 fi
 
 # runs a build command in the source folder
 build () {
-  if [ "$GIMP_FLATPAK" = 1 ]; then
-    "$devtools/gimp-build.sh" "$top" "$@"
-  else
-    (cd "$top" && "$@")
-  fi
+  (cd "$top" && "$@")
 }
 
 rm -rf "$out"; mkdir -p "$out/profile"
@@ -59,28 +59,16 @@ printf '(plug-in-path "${gimp_dir}/plug-ins:${gimp_plug_in_dir}/plug-ins:%s")\n'
 # the environment of GIMP; the cases check the Polish translation
 env="GIMP3_DIRECTORY=$out/profile WT_ONLY=$WT_ONLY LANGUAGE=pl"
 # a sanitizer build writes the reports of the plug-in to
-# tests/output/sanitizer.<pid>; with the Flatpak it needs the SDK at run
-# time (libasan, libubsan)
-devel= sanitize=
+# tests/output/sanitizer.<pid>
+sanitize=
 case "$*" in
   *b_sanitize=*)
-    sanitize=1 devel=--devel
+    sanitize=1
     env="$env ASAN_OPTIONS=log_path=$out/sanitizer:detect_leaks=1"
     env="$env UBSAN_OPTIONS=log_path=$out/sanitizer:print_stacktrace=1" ;;
 esac
-if [ "$GIMP_FLATPAK" = 1 ]; then
-  set -- gimp_run --flatpak $devel --app="$GIMP_APP_ID" --filesystem="$top" \
-    $(for e in $env; do echo "--env=$e"; done) -- gimp-console-"$GIMP_SERIES"
-else
-  # gimp-console-3.2, or gimp-console if there is no such command
-  if [ -z "$GIMP_CONSOLE" ]; then
-    GIMP_CONSOLE=gimp-console
-    if [ -n "$GIMP_SERIES" ] && command -v "gimp-console-$GIMP_SERIES" > /dev/null; then
-      GIMP_CONSOLE=gimp-console-$GIMP_SERIES
-    fi
-  fi
-  set -- gimp_run --native $(for e in $env; do echo "--env=$e"; done) -- "$GIMP_CONSOLE"
-fi
+# shellcheck disable=SC2046 # one --env= per word of $env
+set -- gimp_run $(for e in $env; do echo "--env=$e"; done) -- "$console"
 set +e
 "$@" --no-interface --no-data \
   --batch-interpreter python-fu-eval -b "exec(open('$here/cases.py').read())" --quit \

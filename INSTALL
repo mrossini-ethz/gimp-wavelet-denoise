@@ -21,18 +21,6 @@ Edit->Preferences->Folders->Plug-ins in GIMP for the exact path):
 
 Restart GIMP after installing.
 
-Flatpak GIMP
-------------
-The Flatpak version of GIMP reads user plug-ins from ~/.config/GIMP/3.2 as
-well. The plugin has to be built against the GIMP of the Flatpak, using the
-GNOME SDK that GIMP was built with (see "flatpak info org.gimp.GIMP"):
-
-	flatpak install --user flathub org.gnome.Sdk//50
-	flatpak run --devel --filesystem=$PWD --filesystem=~/.config/GIMP \
-	  --env=PKG_CONFIG_PATH=/app/lib/pkgconfig --command=sh org.gimp.GIMP -c \
-	  'meson setup build -Dplugindir=$HOME/.config/GIMP/3.2/plug-ins &&
-	   ninja -C build install'
-
 Tests
 -----
 tests/run.sh builds the plugin into tests/output and runs its tests in GIMP
@@ -40,7 +28,7 @@ without a window, with a throwaway GIMP profile in tests/output, so the
 installed plugins and settings are not touched. It needs meson, ninja and
 gimp-console of GIMP 3 (set GIMP_CONSOLE=gimp-console-3.2 if it has another
 name); with gimp-devtools from https://github.com/sandbranch next to
-this folder it uses the Flatpak GIMP. For a build with AddressSanitizer and
-UndefinedBehaviorSanitizer:
+this folder, its scripts find GIMP and keep the tests away from your own
+folders. For a build with AddressSanitizer and UndefinedBehaviorSanitizer:
 
 	tests/run.sh -Db_sanitize=address,undefined
