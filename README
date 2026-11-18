@@ -25,8 +25,9 @@ USAGE
 
 Once the plugin is installed successfully, the plugin can be found in The GIMP
 using the menu "Filters->Enhance->Wavelet denoise". It works for both Grayscale
-and RGB (full colour) images, including alpha channels. The plugin dialog
-allows to adjust several parameters.
+and RGB (full colour) images, including alpha channels, in any precision (8 and
+16 bit integer as well as floating point images). The plugin dialog allows to
+adjust several parameters.
 
 1. First, the choice has to be made over what colour model is to be used. There
    are three possibilities (maybe there will be more in the future):
@@ -40,13 +41,14 @@ allows to adjust several parameters.
    YCbCr and CIELAB allow separate reduction of luminance and chroma (colour)
    noise.
 
-2. The preview mode can be selected. Either all channels can be selected or
-   the current active channel which is then displayed in grayscale or colour.
+2. The preview channel can be selected. Either all channels are displayed or
+   a single channel, in grayscale or (with "Show in color") in colour. Hold
+   the "Hold to compare" button to see the displayed channels without
+   denoising.
 
-3. Select the channel you want to denoise.
-
-4. The sliders adjust the the threshold for denoising. The softness controls
-   the softness of the thresholding. The greater the softness, the more noise
+3. Each channel has its own sliders. The threshold sets how strongly the
+   channel is denoised, 0 leaves it untouched. The softness controls the
+   softness of the thresholding. The greater the softness, the more noise
    remains in the image.
 
 For camera pictures I advise to use YCbCr mode (which is nearly lossless) and
@@ -54,3 +56,13 @@ to at least denoise the Cb and Cr channels to reduce the chroma (colour) noise.
 Cameras shooting in JPEG mode normally have chroma noise already reduced. If
 desired, the luminance noise can be reduced. This channel usually contains
 most of the fine structures in the image and should mostly be left alone.
+
+SCRIPTING
+---------
+
+The plugin can be called from scripts as "plug-in-wavelet-denoise". Besides
+the image and drawable it takes the color model ("ycbcr", "lab" or "rgb") and
+a threshold (0 to 10) and softness (0 to 1) for each channel: "threshold-1",
+"threshold-2", "threshold-3", "threshold-alpha" and the matching "softness-"
+arguments. The first channel is Y, L* or R (or gray for grayscale images), the
+second Cb, a* or G, the third Cr, b* or B.

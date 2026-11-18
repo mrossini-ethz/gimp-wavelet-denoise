@@ -1,6 +1,29 @@
 ChangeLog
 =========
 
+wavelet-denoise v0.5
+-------------------------------------------------------------------------------
+- Ported to GIMP 3. GIMP 2.x is no longer supported, use v0.4 for it.
+- Images of any precision are processed in floating point without loss, in
+  the colour space of the image. Floating point images keep values outside of
+  [0,1].
+- The settings of all channels are shown at once. The color model and all
+  settings are arguments of the procedure, so the plugin can be scripted.
+- GIMP's standard Reset, Load and Save Settings replace the reset buttons,
+  which set the thresholds to 0 instead of the defaults.
+- The temporary reset button is now "Hold to compare".
+- Fixed: the dialog showed the wrong color model when CIELAB or RGB had been
+  used before.
+- Fixed: reading outside of the image for selections smaller than 32 pixels.
+- Fixed: the YCbCr conversion was not exactly reversible, which changed
+  16-bit and floating point images slightly where nothing was denoised.
+- Fixed: CIELAB turned negative values of floating point images into NaN.
+- Indexed images, layer groups and layers with locked pixels are refused
+  with an error message instead of being processed.
+- Nothing is changed when all thresholds are 0.
+- Added tests (tests/run.sh).
+- Build system is now meson; translations are installed with the plugin.
+
 wavelet-denoise v0.4
 -------------------------------------------------------------------------------
 - Added translations:

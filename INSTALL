@@ -1,21 +1,34 @@
 INSTALL
 =======
 
-For Linux and Unix users
-------------------------
-For a system wide installation simply state
+The plugin requires GIMP 3.0 or newer. For GIMP 2.x use version 0.4.
 
-	make
-	make install
+Building needs meson, ninja, a C compiler, gettext and the GIMP development
+files (the package is called libgimp-3.0-dev on Debian and Ubuntu,
+gimp-devel on Fedora).
 
-To make a user installation state
+System wide installation:
 
-	make
-	make userinstall
+	meson setup build
+	ninja -C build
+	sudo ninja -C build install
 
-A restart of The GIMP is recommended.
+User installation, into the plug-ins folder of your GIMP profile (see
+Edit->Preferences->Folders->Plug-ins in GIMP for the exact path):
 
-Other platforms
----------------
-I'm sorry I have no knowledge on how to install plugins on other platforms. I
-hope others will find a way.
+	meson setup build -Dplugindir=$HOME/.config/GIMP/3.2/plug-ins
+	ninja -C build install
+
+Restart GIMP after installing.
+
+Tests
+-----
+tests/run.sh builds the plugin into tests/output and runs its tests in GIMP
+without a window, with a throwaway GIMP profile in tests/output, so the
+installed plugins and settings are not touched. It needs meson, ninja and
+gimp-console of GIMP 3 (set GIMP_CONSOLE=gimp-console-3.2 if it has another
+name); with gimp-devtools from https://github.com/sandbranch next to
+this folder, its scripts find GIMP and keep the tests away from your own
+folders. For a build with AddressSanitizer and UndefinedBehaviorSanitizer:
+
+	tests/run.sh -Db_sanitize=address,undefined

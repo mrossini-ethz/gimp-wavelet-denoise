@@ -15,6 +15,14 @@
 
 #include "plugin.h"
 
+/* x to the power e, keeping the sign: floating point images may hold
+   negative values, which pow () would turn into NaN */
+static float
+signed_pow (float x, double e)
+{
+  return x < 0 ? -pow (-x, e) : pow (x, e);
+}
+
 void
 srgb2ycbcr (float ** fimg, int size)
 {
@@ -23,12 +31,15 @@ srgb2ycbcr (float ** fimg, int size)
   int i;
   float y, cb, cr;
 
+  /* the coefficients are given with enough digits to be the exact
+   * inverse of the ones in ycbcr2srgb (), so that 16-bit and floating
+   * point images come back unchanged where nothing is denoised */
   for (i = 0; i < size; i++) {
     y =   0.2990 * fimg[0][i] + 0.5870 * fimg[1][i] + 0.1140 * fimg[2][i];
-    cb = -0.1687 * fimg[0][i] - 0.3313 * fimg[1][i] + 0.5000 * fimg[2][i]
-         + 0.5;
-    cr =  0.5000 * fimg[0][i] - 0.4187 * fimg[1][i] - 0.0813 * fimg[2][i]
-         + 0.5;
+    cb = -0.16873589 * fimg[0][i] - 0.33126411 * fimg[1][i]
+         + 0.5000 * fimg[2][i] + 0.5;
+    cr =  0.5000 * fimg[0][i] - 0.41868759 * fimg[1][i]
+         - 0.08131241 * fimg[2][i] + 0.5;
     fimg[0][i] = y;
     fimg[1][i] = cb;
     fimg[2][i] = cr;
@@ -60,8 +71,8 @@ ycbcr2srgb (float **fimg, int size, int pc)
 
   for (i = 0; i < size; i++) {
     r = fimg[0][i] + 1.40200 * (fimg[2][i] - 0.5);
-    g = fimg[0][i] - 0.34414 * (fimg[1][i] - 0.5)
-        - 0.71414 * (fimg[2][i] - 0.5);
+    g = fimg[0][i] - 0.34413629 * (fimg[1][i] - 0.5)
+        - 0.71413629 * (fimg[2][i] - 0.5);
     b = fimg[0][i] + 1.77200 * (fimg[1][i] - 0.5);
     fimg[0][i] = r;
     fimg[1][i] = g;
@@ -78,9 +89,9 @@ srgb2xyz (float **fimg, int size)
 
   for (i = 0; i < size; i++) {
     /* scaling and gamma correction (approximate) */
-    fimg[0][i] = pow(fimg[0][i], 2.2);
-    fimg[1][i] = pow(fimg[1][i], 2.2);
-    fimg[2][i] = pow(fimg[2][i], 2.2);
+    fimg[0][i] = signed_pow(fimg[0][i], 2.2);
+    fimg[1][i] = signed_pow(fimg[1][i], 2.2);
+    fimg[2][i] = signed_pow(fimg[2][i], 2.2);
  
 
     /* matrix RGB -> XYZ, with D65 reference white (www.brucelindbloom.com) */
@@ -115,7 +126,7 @@ xyz2srgb (float **fimg, int size, int pc)
   } else if (pc > 0) { /* single channel, gray */
     pc -= 1;
     for (i = 0; i < size; i++) {
-      fimg[pc][i] = pow(fimg[pc][i], 1 / 2.2);
+      fimg[pc][i] = signed_pow(fimg[pc][i], 1 / 2.2);
       fimg[(pc + 1) % 3][i] = fimg[pc][i];
       fimg[(pc + 2) % 3][i] = fimg[pc][i];
     }
@@ -138,9 +149,9 @@ xyz2srgb (float **fimg, int size, int pc)
     */
   
     /* scaling and gamma correction (approximate) */
-    r = r < 0 ? 0 : pow(r, 1.0 / 2.2);
-    g = g < 0 ? 0 : pow(g, 1.0 / 2.2);
-    b = b < 0 ? 0 : pow(b, 1.0 / 2.2);
+    r = signed_pow(r, 1.0 / 2.2);
+    g = signed_pow(g, 1.0 / 2.2);
+    b = signed_pow(b, 1.0 / 2.2);
   
     fimg[0][i] = r;
     fimg[1][i] = g;
@@ -163,7 +174,7 @@ void lab2srgb (float **fimg, int size, int pc)
   } else if (pc > 0) { /* single channel, gray */
     pc -= 1;
     for (i = 0; i < size; i++) {
-      fimg[pc][i] = pow(fimg[pc][i], 1 / 2.2);
+      fimg[pc][i] = signed_pow(fimg[pc][i], 1 / 2.2);
       fimg[(pc + 1) % 3][i] = fimg[pc][i];
       fimg[(pc + 2) % 3][i] = fimg[pc][i];
     }
@@ -239,8 +250,6 @@ void srgb2lab (float **fimg, int size)
     fimg[0][i] = l / 116.0; // + 16 * 27 / 24389.0;
     fimg[1][i] = a / 500.0 / 2.0 + 0.5;
     fimg[2][i] = b / 200.0 / 2.2 + 0.5;
-    if (fimg[0][i] < 0)
-      fimg[0][i] = 0;
   }
 }
 

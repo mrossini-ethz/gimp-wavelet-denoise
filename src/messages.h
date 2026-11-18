@@ -25,7 +25,7 @@
 /* Tool-tips */
 #define TT_THR_AMOUNT_COLOUR _("Adjusts the threshold for denoising of the selected channel in a range from 0.0 (none) to 10.0. The threshold is the value below which everything is considered noise.")
 #define TT_THR_AMOUNT_GRAY _("Adjusts the threshold for denoising in a range from 0.0 (none) to 10.0. The threshold is the value below which everything is considered noise.")
-#define TT_SELECT _("Select an image channel to edit its denoising settings.")
+#define TT_SELECT _("Select the image channel to display in the preview.")
 #define TT_PREVIEW_ALL _("Display all channels of the image (final image).")
 #define TT_PREVIEW_SEL_GRAY _("Display only the selected channel in grayscale mode.")
 #define TT_PREVIEW_SEL_COLOUR _("Display only the selected channel in color mode.")
@@ -34,9 +34,6 @@
 #define TT_MODEL_LAB _("CIELAB (L*a*b*) is a color model in which chrominance is separated from lightness and color distances are perceptually uniform. Note that this choice drastically affects the result.")
 #define TT_THR_DETAIL_COLOUR _("This adjusts the softness of the thresholding (soft as opposed to hard thresholding). The higher the softness the more noise remains in the image. Default is 0.0.")
 #define TT_THR_DETAIL_GRAY TT_THR_DETAIL_COLOUR
-#define TT_RESET_PREVIEW _("Resets the settings for the selected channel while the button is pressed.")
-#define TT_RESET_CHANNEL_GRAY _("Resets to the default values.")
-#define TT_RESET_CHANNEL_COLOUR _("Resets the current channel to the default values.")
-#define TT_RESET_ALL _("Resets all channels to the default values.")
+#define TT_COMPARE _("Shows the previewed channels without denoising while the button is pressed.")
 
 #endif /* __MESSAGES_H__ */

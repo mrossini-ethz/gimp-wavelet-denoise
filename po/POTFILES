@@ -1,0 +1,4 @@
+src/denoise.c
+src/interface.c
+src/messages.h
+src/plugin.c

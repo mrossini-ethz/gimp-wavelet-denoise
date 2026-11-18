@@ -1,16 +1,12 @@
 TRANSLATIONS
 ============
 
-If you want to contribute by translating the program to any language, go to
-the 'po' directory and open the file 'Makefile'. Add your language to
+If you want to contribute by translating the program to any language, add
+your language code to the file 'po/LINGUAS'. Then, after 'meson setup build',
+state
 
-	LANGUAGES = de ru it et pl sr pt <your language>
+	ninja -C build wavelet-denoise-pot wavelet-denoise-update-po
 
-with a valid locale name. Then state
+which will create or update the file 'po/<your language>.po'.
 
-	make update-po
-
-which will create the file '<your language>.po'
-
-Translate this file and send '<your language>.po' to the program maintainer.
-This would be <marco.rossini@gmx.net>. Thank you!
+Translate this file and send it to the program maintainer. Thank you!

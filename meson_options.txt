@@ -1,0 +1,3 @@
+option('plugindir', type: 'string', value: '',
+  description: 'Folder of GIMP plug-ins, default: the system folder of GIMP. '
+    + 'For a user installation use e.g. ~/.config/GIMP/3.2/plug-ins')
